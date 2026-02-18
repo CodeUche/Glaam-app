@@ -1,0 +1,3 @@
+"""
+Migrations for bookings app.
+"""

@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "GlamConnect",
+    "slug": "glamconnect",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#BE185D"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.glamconnect.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "GlamConnect needs camera access to take portfolio photos.",
+        "NSPhotoLibraryUsageDescription": "GlamConnect needs photo library access to upload portfolio images."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#BE185D"
+      },
+      "package": "com.glamconnect.app",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-image-picker",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "apiUrl": "https://api.glamconnect.com/api/v1",
+      "wsUrl": "wss://api.glamconnect.com/ws"
+    }
+  }
+}

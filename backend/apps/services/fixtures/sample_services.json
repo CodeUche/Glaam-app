@@ -1,0 +1,122 @@
+[
+    {
+        "model": "services.service",
+        "pk": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "fields": {
+            "name": "Bridal Makeup Package",
+            "description": "Complete bridal makeup with pre-wedding trial, including airbrush foundation, contouring, eye makeup, and lip color. Perfect for your special day!",
+            "category": "bridal",
+            "price": "350.00",
+            "duration": 180,
+            "is_active": true,
+            "booking_count": 45,
+            "created_at": "2024-01-15T10:00:00Z",
+            "updated_at": "2024-02-15T14:30:00Z"
+        }
+    },
+    {
+        "model": "services.service",
+        "pk": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "fields": {
+            "name": "Editorial Photoshoot Makeup",
+            "description": "High-fashion editorial makeup for photoshoots and magazine features. Includes creative eye looks and bold lip colors.",
+            "category": "editorial",
+            "price": "200.00",
+            "duration": 120,
+            "is_active": true,
+            "booking_count": 28,
+            "created_at": "2024-01-20T11:00:00Z",
+            "updated_at": "2024-02-10T16:00:00Z"
+        }
+    },
+    {
+        "model": "services.service",
+        "pk": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+        "fields": {
+            "name": "Natural Everyday Look",
+            "description": "Subtle, natural makeup that enhances your features for daily wear. Perfect for work or casual outings.",
+            "category": "natural",
+            "price": "80.00",
+            "duration": 60,
+            "is_active": true,
+            "booking_count": 67,
+            "created_at": "2024-01-25T09:00:00Z",
+            "updated_at": "2024-02-14T12:00:00Z"
+        }
+    },
+    {
+        "model": "services.service",
+        "pk": "d4e5f6a7-b8c9-0123-def0-234567890123",
+        "fields": {
+            "name": "Glamour Night Out",
+            "description": "Full glam makeup for special events, parties, and nights out. Includes dramatic eyes, contoured cheeks, and bold lips.",
+            "category": "glam",
+            "price": "150.00",
+            "duration": 90,
+            "is_active": true,
+            "booking_count": 52,
+            "created_at": "2024-02-01T10:30:00Z",
+            "updated_at": "2024-02-15T11:00:00Z"
+        }
+    },
+    {
+        "model": "services.service",
+        "pk": "e5f6a7b8-c9d0-1234-ef01-345678901234",
+        "fields": {
+            "name": "Airbrush Foundation Application",
+            "description": "Professional airbrush makeup for flawless, long-lasting coverage. Ideal for events and photography.",
+            "category": "airbrush",
+            "price": "120.00",
+            "duration": 75,
+            "is_active": true,
+            "booking_count": 34,
+            "created_at": "2024-02-05T13:00:00Z",
+            "updated_at": "2024-02-12T15:30:00Z"
+        }
+    },
+    {
+        "model": "services.service",
+        "pk": "f6a7b8c9-d0e1-2345-f012-456789012345",
+        "fields": {
+            "name": "Makeup Consultation",
+            "description": "One-on-one consultation to discuss your makeup needs, skin type, and personalized recommendations.",
+            "category": "consultation",
+            "price": "50.00",
+            "duration": 45,
+            "is_active": true,
+            "booking_count": 89,
+            "created_at": "2024-01-10T08:00:00Z",
+            "updated_at": "2024-02-16T10:00:00Z"
+        }
+    },
+    {
+        "model": "services.service",
+        "pk": "a7b8c9d0-e1f2-3456-0123-567890123456",
+        "fields": {
+            "name": "Special Effects Makeup",
+            "description": "Creative SFX makeup for Halloween, cosplay, theatrical performances, and film. Includes prosthetics and body painting.",
+            "category": "sfx",
+            "price": "250.00",
+            "duration": 180,
+            "is_active": true,
+            "booking_count": 15,
+            "created_at": "2024-02-08T14:00:00Z",
+            "updated_at": "2024-02-14T16:00:00Z"
+        }
+    },
+    {
+        "model": "services.service",
+        "pk": "b8c9d0e1-f2a3-4567-1234-678901234567",
+        "fields": {
+            "name": "Theatrical Stage Makeup",
+            "description": "Bold, dramatic makeup designed for stage performances and theatrical productions. Ensures visibility under stage lighting.",
+            "category": "theatrical",
+            "price": "175.00",
+            "duration": 90,
+            "is_active": true,
+            "booking_count": 22,
+            "created_at": "2024-01-18T11:30:00Z",
+            "updated_at": "2024-02-11T13:00:00Z"
+        }
+    }
+]

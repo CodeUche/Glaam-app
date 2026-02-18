@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"c:\\\\Users\\\\Precious\\\\MakeUp-app\\\\backend\\\\apps\")",
+      "Bash(python manage.py check:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(wc:*)",
+      "Bash(echo:*)"
+    ]
+  }
+}
