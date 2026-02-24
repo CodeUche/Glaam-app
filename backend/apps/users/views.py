@@ -252,23 +252,81 @@ class PasswordResetConfirmView(APIView):
 
 class EmailVerificationView(APIView):
     """
-    Verify user email address.
+    Verify user email address using a signed token.
+    Accepts both GET (link click) and POST (form submission).
     """
 
     permission_classes = [permissions.AllowAny]
 
+    def get(self, request):
+        """Handle verification via link click (token in query param)."""
+        token = request.query_params.get('token')
+        return self._verify_token(token)
+
     def post(self, request):
+        """Handle verification via form submission (token in request body)."""
         token = request.data.get('token')
+        return self._verify_token(token)
 
+    def _verify_token(self, token):
+        """Verify the email token and mark user as verified."""
         if not token:
-            return Response({
-                'error': 'Token is required.'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Verification token is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # In a real implementation, you would decode and validate the token
-        # For now, this is a placeholder
-        # You would typically use a signed token (e.g., Django's signing framework)
+        from .utils import verify_email_token
+        user_pk = verify_email_token(token)
 
-        return Response({
-            'message': 'Email verified successfully.'
-        }, status=status.HTTP_200_OK)
+        if not user_pk:
+            return Response(
+                {'error': 'Invalid or expired verification token. Please request a new one.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(pk=user_pk, deleted_at__isnull=True)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if user.is_verified:
+            return Response(
+                {'message': 'Email is already verified.'},
+                status=status.HTTP_200_OK
+            )
+
+        user.is_verified = True
+        user.save(update_fields=['is_verified'])
+
+        return Response(
+            {'message': 'Email verified successfully. You can now log in.'},
+            status=status.HTTP_200_OK
+        )
+
+
+class ResendVerificationEmailView(APIView):
+    """
+    Resend the verification email for the currently authenticated user.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if user.is_verified:
+            return Response(
+                {'message': 'Your email is already verified.'},
+                status=status.HTTP_200_OK
+            )
+
+        from .tasks import send_verification_email_task
+        send_verification_email_task.delay(str(user.id))
+
+        return Response(
+            {'message': 'Verification email sent. Please check your inbox.'},
+            status=status.HTTP_200_OK
+        )

@@ -11,7 +11,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Booking, Service, BookingStatus
+from .models import Booking, BookingStatus
+from apps.services.models import Service
 from .serializers import (
     BookingListSerializer,
     BookingDetailSerializer,
@@ -45,7 +46,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['artist', 'category', 'is_active']
     search_fields = ['name', 'description', 'category']
-    ordering_fields = ['price', 'duration_minutes', 'created_at']
+    ordering_fields = ['price', 'duration', 'created_at']
     ordering = ['-created_at']
 
     def get_permissions(self):

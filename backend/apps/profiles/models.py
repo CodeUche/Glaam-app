@@ -5,9 +5,31 @@ Profile models for clients and makeup artists.
 import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator, MaxValueValidator
-from cloudinary.models import CloudinaryField
+
+# ArrayField: use the PostgreSQL-native version when psycopg2 is available,
+# otherwise fall back to a JSONField-based equivalent for SQLite / standalone mode.
+try:
+    from django.contrib.postgres.fields import ArrayField
+except Exception:
+    class ArrayField(models.JSONField):
+        """SQLite-compatible drop-in for django.contrib.postgres.fields.ArrayField."""
+        def __init__(self, base_field=None, size=None, **kwargs):
+            kwargs.setdefault('default', list)
+            super().__init__(**kwargs)
+
+# CloudinaryField: use the real Cloudinary field when credentials are configured,
+# otherwise fall back to a plain ImageField for standalone / local file storage.
+try:
+    from cloudinary.models import CloudinaryField
+except Exception:
+    class CloudinaryField(models.ImageField):
+        """Local-storage drop-in for cloudinary.models.CloudinaryField."""
+        def __init__(self, *args, **kwargs):
+            for key in ('type', 'resource_type', 'folder', 'use_filename',
+                        'unique_filename', 'overwrite', 'access_mode'):
+                kwargs.pop(key, None)
+            super().__init__(*args, **kwargs)
 
 User = get_user_model()
 

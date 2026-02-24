@@ -14,6 +14,7 @@ from .views import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     EmailVerificationView,
+    ResendVerificationEmailView,
 )
 
 app_name = 'users'
@@ -35,4 +36,5 @@ urlpatterns = [
 
     # Email verification
     path('verify-email/', EmailVerificationView.as_view(), name='verify_email'),
+    path('resend-verification/', ResendVerificationEmailView.as_view(), name='resend_verification'),
 ]

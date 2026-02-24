@@ -6,7 +6,8 @@ from rest_framework import serializers
 from django.utils import timezone
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Booking, Service, BookingStatus
+from .models import Booking, BookingStatus
+from apps.services.models import Service
 from apps.profiles.models import MakeupArtistProfile
 from .utils import check_artist_availability
 
@@ -21,7 +22,7 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = [
             'id', 'artist', 'artist_name', 'artist_id', 'name',
-            'description', 'price', 'duration_minutes', 'category',
+            'description', 'price', 'duration', 'category',
             'is_active', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

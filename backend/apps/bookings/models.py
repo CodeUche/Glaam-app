@@ -21,43 +21,6 @@ class BookingStatus(models.TextChoices):
     CANCELLED = 'cancelled', 'Cancelled'
 
 
-class Service(models.Model):
-    """Services offered by makeup artists."""
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    artist = models.ForeignKey(
-        'profiles.MakeupArtistProfile',
-        on_delete=models.CASCADE,
-        related_name='services'
-    )
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)]
-    )
-    duration_minutes = models.PositiveIntegerField(
-        help_text="Duration of the service in minutes"
-    )
-    category = models.CharField(max_length=100, blank=True)
-    is_active = models.BooleanField(default=True, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'services_service'
-        verbose_name = 'Service'
-        verbose_name_plural = 'Services'
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['artist', 'is_active']),
-        ]
-
-    def __str__(self):
-        return f"{self.artist.user.full_name} - {self.name}"
-
-
 class Booking(models.Model):
     """Booking model for client-artist appointments."""
 
@@ -80,7 +43,7 @@ class Booking(models.Model):
         related_name='bookings'
     )
     service = models.ForeignKey(
-        Service,
+        'services.Service',
         on_delete=models.PROTECT,
         related_name='bookings'
     )
@@ -99,14 +62,21 @@ class Booking(models.Model):
     cancellation_reason = models.TextField(blank=True, null=True)
     cancelled_by = models.CharField(
         max_length=10,
-        choices=[('client', 'Client'), ('artist', 'Artist')],
+        choices=[
+            ('client', 'Client'),
+            ('artist', 'Artist'),
+            ('system', 'System'),
+            ('admin', 'Admin'),
+        ],
         blank=True,
         null=True
     )
     total_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0)]
+        validators=[MinValueValidator(0)],
+        null=True,
+        blank=True,
     )
 
     # Timestamps
@@ -127,24 +97,25 @@ class Booking(models.Model):
             models.Index(fields=['booking_date', 'status']),
             models.Index(fields=['booking_number']),
         ]
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(booking_date__gte=timezone.now().date()),
-                name='booking_date_not_in_past'
-            ),
-        ]
+        # NOTE: booking_date validation is enforced at the Python level in clean().
+        # A DB CheckConstraint with a static date would become stale over time.
 
     def __str__(self):
         return f"{self.booking_number} - {self.client.full_name} with {self.artist.user.full_name}"
 
     def save(self, *args, **kwargs):
-        """Generate booking number if not exists."""
+        """Generate booking number and auto-set total_price if not provided."""
         if not self.booking_number:
             self.booking_number = self._generate_booking_number()
 
-        # Set total_price from service if not set
-        if not self.total_price and self.service:
-            self.total_price = self.service.price
+        # Auto-set total_price from service price when creating a new booking
+        if self.total_price is None and self.service_id:
+            try:
+                from apps.services.models import Service
+                service = Service.objects.get(pk=self.service_id)
+                self.total_price = service.price
+            except Exception:
+                pass
 
         super().save(*args, **kwargs)
 
@@ -165,10 +136,17 @@ class Booking(models.Model):
             })
 
         # Validate service belongs to the artist
-        if self.service and self.artist and self.service.artist != self.artist:
-            raise ValidationError({
-                'service': 'This service does not belong to the selected artist.'
-            })
+        if self.service_id and self.artist_id:
+            # Use _id fields to avoid extra DB hits
+            from apps.services.models import Service
+            try:
+                service = Service.objects.get(pk=self.service_id)
+                if str(service.artist_id) != str(self.artist_id):
+                    raise ValidationError({
+                        'service': 'This service does not belong to the selected artist.'
+                    })
+            except Service.DoesNotExist:
+                raise ValidationError({'service': 'Invalid service.'})
 
     def _generate_booking_number(self):
         """Generate unique booking number."""
@@ -205,9 +183,11 @@ class Booking(models.Model):
         self.completed_at = timezone.now()
         self.save(update_fields=['status', 'completed_at', 'updated_at'])
 
-        # Update artist's total bookings
-        self.artist.total_bookings += 1
-        self.artist.save(update_fields=['total_bookings', 'updated_at'])
+        # Atomically increment artist's total bookings counter
+        from django.db.models import F
+        type(self.artist).objects.filter(pk=self.artist_id).update(
+            total_bookings=F('total_bookings') + 1
+        )
 
     def cancel(self, cancelled_by, reason=None):
         """Cancel the booking."""

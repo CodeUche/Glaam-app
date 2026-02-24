@@ -3,7 +3,8 @@ Filters for bookings app.
 """
 
 import django_filters
-from .models import Booking, Service, BookingStatus
+from .models import Booking, BookingStatus
+from apps.services.models import Service
 
 
 class BookingFilter(django_filters.FilterSet):
@@ -67,12 +68,12 @@ class ServiceFilter(django_filters.FilterSet):
         label='Maximum price'
     )
     min_duration = django_filters.NumberFilter(
-        field_name='duration_minutes',
+        field_name='duration',
         lookup_expr='gte',
         label='Minimum duration (minutes)'
     )
     max_duration = django_filters.NumberFilter(
-        field_name='duration_minutes',
+        field_name='duration',
         lookup_expr='lte',
         label='Maximum duration (minutes)'
     )

@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from .models import Review
 from apps.bookings.models import Booking, BookingStatus
+from apps.profiles.models import MakeupArtistProfile
 
 User = get_user_model()
 
@@ -31,7 +32,7 @@ class ReviewArtistSerializer(serializers.ModelSerializer):
     profile_photo = serializers.SerializerMethodField()
 
     class Meta:
-        model = 'profiles.MakeupArtistProfile'
+        model = MakeupArtistProfile
         fields = [
             'id',
             'user_id',

@@ -4,42 +4,7 @@ Admin configuration for bookings app.
 
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Booking, Service, BookingStatus
-
-
-@admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
-    """Admin interface for Service model."""
-
-    list_display = [
-        'name', 'artist', 'price', 'duration_minutes',
-        'category', 'is_active', 'created_at'
-    ]
-    list_filter = ['is_active', 'category', 'created_at']
-    search_fields = ['name', 'description', 'artist__user__email', 'artist__user__first_name']
-    readonly_fields = ['id', 'created_at', 'updated_at']
-    ordering = ['-created_at']
-    date_hierarchy = 'created_at'
-
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'artist', 'name', 'description')
-        }),
-        ('Pricing & Duration', {
-            'fields': ('price', 'duration_minutes', 'category')
-        }),
-        ('Status', {
-            'fields': ('is_active',)
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-
-    def get_queryset(self, request):
-        """Optimize queries."""
-        return super().get_queryset(request).select_related('artist__user')
+from .models import Booking, BookingStatus
 
 
 @admin.register(Booking)

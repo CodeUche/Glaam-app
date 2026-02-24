@@ -9,6 +9,24 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+class NotificationType(models.TextChoices):
+    """Notification type choices."""
+    # Booking notifications
+    BOOKING_REQUEST = 'booking_request', 'Booking Request'
+    NEW_BOOKING = 'new_booking', 'New Booking'
+    BOOKING_ACCEPTED = 'booking_accepted', 'Booking Accepted'
+    BOOKING_REJECTED = 'booking_rejected', 'Booking Rejected'
+    BOOKING_COMPLETED = 'booking_completed', 'Booking Completed'
+    BOOKING_CANCELLED = 'booking_cancelled', 'Booking Cancelled'
+    BOOKING_REMINDER = 'booking_reminder', 'Booking Reminder'
+    # Review notifications
+    REVIEW_RECEIVED = 'review_received', 'Review Received'
+    REVIEW_REMINDER = 'review_reminder', 'Review Reminder'
+    REVIEW_RESPONSE = 'review_response', 'Review Response'
+    # System
+    SYSTEM = 'system', 'System'
+
+
 class Notification(models.Model):
     """In-app notifications for users."""
 
@@ -16,17 +34,8 @@ class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     notification_type = models.CharField(
         max_length=50,
-        choices=[
-            ('booking_request', 'Booking Request'),
-            ('new_booking', 'New Booking'),
-            ('booking_accepted', 'Booking Accepted'),
-            ('booking_rejected', 'Booking Rejected'),
-            ('booking_completed', 'Booking Completed'),
-            ('booking_cancelled', 'Booking Cancelled'),
-            ('booking_reminder', 'Booking Reminder'),
-            ('review_received', 'Review Received'),
-            ('system', 'System'),
-        ]
+        choices=NotificationType.choices,
+        default=NotificationType.SYSTEM,
     )
     title = models.CharField(max_length=255)
     message = models.TextField()

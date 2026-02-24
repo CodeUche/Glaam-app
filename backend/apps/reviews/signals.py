@@ -13,25 +13,19 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=Review)
-def update_artist_rating_on_create(sender, instance, created, **kwargs):
+def update_artist_rating_on_save(sender, instance, created, **kwargs):
     """
     Update artist rating when a review is created or visibility changes.
-
-    This signal is triggered after a review is saved to:
-    - Recalculate artist's average rating
-    - Update artist's total review count
-    - Trigger spam detection checks
+    Uses transaction.on_commit to ensure the review is fully saved before updating.
     """
-    # Use transaction.on_commit to ensure the review is saved before triggering tasks
     def trigger_tasks():
         from .tasks import update_artist_rating, check_review_spam
 
-        # Always update rating when review is created or visibility changes
         if created or instance.is_visible:
             logger.info(f"Triggering rating update for artist {instance.artist.id}")
             update_artist_rating.delay(str(instance.artist.id))
 
-        # Run spam detection on new reviews
+        # Run spam detection on new reviews only
         if created:
             logger.info(f"Triggering spam check for review {instance.id}")
             check_review_spam.delay(str(instance.id))
@@ -41,15 +35,9 @@ def update_artist_rating_on_create(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Review)
 def update_artist_rating_on_delete(sender, instance, **kwargs):
-    """
-    Update artist rating when a review is deleted.
-
-    This ensures the artist's rating is recalculated after a review
-    is removed from the system.
-    """
+    """Update artist rating when a review is deleted."""
     def trigger_task():
         from .tasks import update_artist_rating
-
         logger.info(f"Triggering rating update after review deletion for artist {instance.artist.id}")
         update_artist_rating.delay(str(instance.artist.id))
 
@@ -57,36 +45,33 @@ def update_artist_rating_on_delete(sender, instance, **kwargs):
 
 
 @receiver(pre_save, sender=Review)
-def track_visibility_changes(sender, instance, **kwargs):
+def capture_pre_save_state(sender, instance, **kwargs):
     """
-    Track when review visibility changes to trigger rating updates.
-
-    If a review's visibility changes (hidden/shown), we need to
-    recalculate the artist's rating since only visible reviews count.
+    Capture the current state of the review before saving.
+    Stores old values for comparison in post_save signals.
     """
-    if instance.pk:  # Only for existing reviews
+    if instance.pk:
         try:
-            old_instance = Review.objects.get(pk=instance.pk)
-            # Store old visibility state for comparison in post_save
-            instance._old_is_visible = old_instance.is_visible
+            old = Review.objects.get(pk=instance.pk)
+            instance._old_is_visible = old.is_visible
+            instance._old_artist_response = old.artist_response
         except Review.DoesNotExist:
             instance._old_is_visible = None
+            instance._old_artist_response = None
+    else:
+        instance._old_is_visible = None
+        instance._old_artist_response = None
 
 
 @receiver(post_save, sender=Review)
 def handle_visibility_change(sender, instance, created, **kwargs):
     """
-    Handle visibility changes by updating artist rating.
-
-    This works in conjunction with the pre_save signal to detect
-    when a review's visibility has changed.
+    Trigger rating update when review visibility changes.
     """
     if not created and hasattr(instance, '_old_is_visible'):
-        # Check if visibility changed
         if instance._old_is_visible != instance.is_visible:
             def trigger_task():
                 from .tasks import update_artist_rating
-
                 logger.info(
                     f"Review visibility changed for review {instance.id}, "
                     f"updating artist {instance.artist.id} rating"
@@ -100,19 +85,15 @@ def handle_visibility_change(sender, instance, created, **kwargs):
 def send_notification_to_artist(sender, instance, created, **kwargs):
     """
     Send notification to artist when they receive a new review.
-
-    This creates an in-app notification and could trigger a push
-    notification or email if the artist has those enabled.
+    Uses 'review_received' notification type which is in Notification.choices.
     """
     if created:
         def create_notification():
             try:
                 from apps.notifications.models import Notification
-
-                # Create notification for artist
                 Notification.objects.create(
                     user=instance.artist.user,
-                    notification_type='new_review',
+                    notification_type='review_received',
                     title='New Review Received',
                     message=(
                         f"{instance.client.full_name} left a {instance.rating}-star review "
@@ -120,9 +101,7 @@ def send_notification_to_artist(sender, instance, created, **kwargs):
                     ),
                     related_booking=instance.booking
                 )
-
                 logger.info(f"Created notification for artist {instance.artist.user.email} about new review")
-
             except Exception as e:
                 logger.error(f"Error creating notification for new review: {str(e)}")
 
@@ -133,27 +112,17 @@ def send_notification_to_artist(sender, instance, created, **kwargs):
 def notify_client_of_artist_response(sender, instance, created, **kwargs):
     """
     Notify client when artist responds to their review.
-
-    This signal detects when an artist adds a response and sends
-    a notification to the client who wrote the review.
+    Uses pre_save captured state (_old_artist_response) to detect new responses.
     """
-    if not created and hasattr(instance, '_old_is_visible'):
-        # Check if artist just added a response
-        try:
-            old_instance = Review.objects.get(pk=instance.pk)
-            had_response = bool(old_instance.artist_response)
-        except Review.DoesNotExist:
-            had_response = False
-
+    if not created and hasattr(instance, '_old_artist_response'):
+        had_response = bool(instance._old_artist_response)
         has_response_now = bool(instance.artist_response)
 
-        # Artist just added a response
+        # Artist just added a response (was empty, now has content)
         if not had_response and has_response_now:
             def create_notification():
                 try:
                     from apps.notifications.models import Notification
-
-                    # Create notification for client
                     Notification.objects.create(
                         user=instance.client,
                         notification_type='review_response',
@@ -164,12 +133,10 @@ def notify_client_of_artist_response(sender, instance, created, **kwargs):
                         ),
                         related_booking=instance.booking
                     )
-
                     logger.info(
                         f"Created notification for client {instance.client.email} "
                         f"about artist response"
                     )
-
                 except Exception as e:
                     logger.error(f"Error creating notification for artist response: {str(e)}")
 
@@ -180,23 +147,14 @@ def notify_client_of_artist_response(sender, instance, created, **kwargs):
 def schedule_review_reminder(sender, instance, created, **kwargs):
     """
     Schedule a review reminder when a booking is completed.
-
-    This signal triggers a delayed task to send a review reminder
-    24 hours after the booking is completed.
+    Uses pre_save tracking via the booking's own signals to detect status changes.
     """
-    from apps.bookings.models import BookingStatus
+    if not created and hasattr(instance, '_old_status'):
+        from apps.bookings.models import BookingStatus
 
-    # Check if booking was just marked as completed
-    if not created:
-        try:
-            old_instance = sender.objects.get(pk=instance.pk)
-            was_completed = old_instance.status == BookingStatus.COMPLETED
-        except sender.DoesNotExist:
-            was_completed = False
-
+        was_completed = instance._old_status == BookingStatus.COMPLETED
         is_completed_now = instance.status == BookingStatus.COMPLETED
 
-        # Booking just completed
         if not was_completed and is_completed_now:
             def schedule_reminder():
                 from .tasks import send_review_reminder
@@ -207,10 +165,8 @@ def schedule_review_reminder(sender, instance, created, **kwargs):
                     args=[str(instance.id)],
                     countdown=int(timedelta(hours=24).total_seconds())
                 )
-
                 logger.info(
-                    f"Scheduled review reminder for booking {instance.booking_number} "
-                    f"in 24 hours"
+                    f"Scheduled review reminder for booking {instance.booking_number} in 24 hours"
                 )
 
             transaction.on_commit(schedule_reminder)
