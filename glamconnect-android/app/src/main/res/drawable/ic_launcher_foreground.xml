@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lipstick / glam icon for GlamConnect -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- White circle background -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
+
+    <!-- Lipstick shape in pink -->
+    <path
+        android:fillColor="#E91E8C"
+        android:pathData="M47,35 L61,35 L64,45 L44,45 Z" />
+    <rect
+        android:fillColor="#C2185B"
+        android:left="44"
+        android:top="45"
+        android:right="64"
+        android:bottom="73" />
+    <path
+        android:fillColor="#FF4081"
+        android:pathData="M44,35 L47,35 L44,45 Z" />
+
+</vector>

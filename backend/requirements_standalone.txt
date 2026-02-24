@@ -1,0 +1,36 @@
+# Standalone / .exe build requirements
+# Python 3.13-compatible versions, no C-compile-from-source packages.
+# Excludes: psycopg2 (SQLite used), redis, celery, channels-redis,
+#            daphne, gunicorn, boto3, django-storages.
+
+# ── Django core ────────────────────────────────────────────────────────────
+# Pin to 5.x — codebase uses Django 5 API; 6.0 has breaking changes.
+Django>=5.0,<6.0
+djangorestframework>=3.14.0,<4.0
+djangorestframework-simplejwt>=5.3.0,<6.0
+django-cors-headers>=4.3.0
+django-filter>=23.5
+django-environ>=0.11.0
+
+# ── WebSocket (InMemoryChannelLayer — no Redis driver needed) ──────────────
+channels>=4.0.0
+
+# ── Image handling ─────────────────────────────────────────────────────────
+# 10.4.0 is the first Pillow release with Python 3.13 wheels.
+Pillow>=10.4.0
+
+# ── Cloud storage (imported by models; patched to local files at runtime) ──
+cloudinary>=1.38.0
+
+# ── Static file serving ────────────────────────────────────────────────────
+whitenoise>=6.6.0
+
+# ── Password hashing ───────────────────────────────────────────────────────
+argon2-cffi>=23.1.0
+
+# ── Utilities ──────────────────────────────────────────────────────────────
+python-decouple>=3.8
+pytz>=2024.1
+
+# ── Validation ─────────────────────────────────────────────────────────────
+email-validator>=2.1.0
