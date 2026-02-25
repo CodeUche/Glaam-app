@@ -15,12 +15,9 @@
     <path
         android:fillColor="#E91E8C"
         android:pathData="M47,35 L61,35 L64,45 L44,45 Z" />
-    <rect
+    <path
         android:fillColor="#C2185B"
-        android:left="44"
-        android:top="45"
-        android:right="64"
-        android:bottom="73" />
+        android:pathData="M44,45 L64,45 L64,73 L44,73 Z" />
     <path
         android:fillColor="#FF4081"
         android:pathData="M44,35 L47,35 L44,45 Z" />
