@@ -89,3 +89,7 @@ secrets/
 # Uploads (keep folder structure, ignore files)
 backend/media/*
 !backend/media/.gitkeep
+
+# Built installers and binaries (too large for git)
+installer/*.exe
+backend/dist/
