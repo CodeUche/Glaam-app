@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.glamconnect.app.ui.dashboard.DashboardFragment"
+        android:label="Dashboard" />
+
+    <fragment
+        android:id="@+id/artistsFragment"
+        android:name="com.glamconnect.app.ui.artists.ArtistsFragment"
+        android:label="Artists" />
+
+    <fragment
+        android:id="@+id/bookingsFragment"
+        android:name="com.glamconnect.app.ui.bookings.BookingsFragment"
+        android:label="Bookings" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.glamconnect.app.ui.settings.SettingsFragment"
+        android:label="Settings" />
+
+</navigation>

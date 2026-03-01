@@ -6,7 +6,7 @@ This script:
   2. Points Django at settings_standalone.py
   3. Runs database migrations automatically
   4. Seeds demo accounts on first run
-  5. Serves the API on http://127.0.0.1:8000 using Python's built-in wsgiref
+  5. Serves the API on http://127.0.0.1:8765 using Python's built-in wsgiref
 
 Run directly:
     py standalone_server.py
@@ -249,7 +249,7 @@ def main():
         print(f'[WARN] collectstatic skipped: {e}')
 
     # Find a free port.
-    port = _find_free_port(8000)
+    port = _find_free_port(8765)
     # Bind to all interfaces so phones on the same WiFi can connect.
     host = '0.0.0.0'
     local_url = f'http://127.0.0.1:{port}'
@@ -265,53 +265,209 @@ def main():
     except Exception:
         pass
 
-    # Set the console window title on Windows so users know what the window is.
-    try:
-        import ctypes
-        ctypes.windll.kernel32.SetConsoleTitleW(
-            'GlamConnect Server  —  DO NOT CLOSE THIS WINDOW'
-        )
-    except Exception:
-        pass
-
-    phone_line = (
-        f'  Phone/Tablet :  {network_url}'
-        if network_url
-        else '  Phone/Tablet :  (could not detect network IP)'
-    )
-
-    print(f"""
-{'=' * 62}
-  GlamConnect  —  Running
-  DO NOT CLOSE THIS WINDOW  (closing stops the server)
-{'=' * 62}
-  This PC   :  {local_url}/api/v1/
-  Admin UI  :  {local_url}/admin/
-{phone_line}
-{'─' * 62}
-  Demo accounts:
-    Admin   →  admin@glamconnect.com   /  Admin@1234!
-    Artist  →  artist@glamconnect.com  /  Artist@1234!
-    Client  →  client@glamconnect.com  /  Client@1234!
-{'─' * 62}
-  Your browser will open automatically in a moment.
-  Press Ctrl+C (or close this window) to stop.
-{'=' * 62}
-""")
-
+    # ── Start the HTTP server in a background thread ───────────────────────
     import threading
-    import webbrowser
-    threading.Timer(2.0, lambda: webbrowser.open(f'{local_url}/api/v1/')).start()
+    import time
 
     from django.core.wsgi import get_wsgi_application
     from wsgiref.simple_server import make_server
 
     application = get_wsgi_application()
     httpd = make_server(host, port, application)
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+
+    # Poll until the server is actually accepting connections (up to 15 s).
+    import urllib.request
+    for _ in range(30):
+        try:
+            urllib.request.urlopen(f'{local_url}/api/v1/', timeout=0.5)
+            break
+        except Exception:
+            time.sleep(0.5)
+
+    # ── Open the app in a native desktop window ────────────────────────────
+    _open_desktop_window(local_url, network_url, data_dir, httpd)
+
+
+# ── Desktop window helpers ──────────────────────────────────────────────────
+
+def _make_loading_html(network_url):
+    """Return a branded splash-screen HTML shown while the server starts."""
+    phone_block = (
+        f'<p class="phone">📱 &nbsp;Phone / Tablet: &nbsp;<b>{network_url}</b></p>'
+        if network_url else ''
+    )
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GlamConnect</title>
+<style>
+  * {{ margin:0; padding:0; box-sizing:border-box }}
+  body {{
+    background: linear-gradient(135deg, #FFF0F7 0%, #FCE4EC 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }}
+  .logo {{ font-size: 80px; margin-bottom: 24px;
+           animation: pulse 2s ease-in-out infinite; }}
+  @keyframes pulse {{
+    0%,100% {{ transform: scale(1) }}
+    50%     {{ transform: scale(1.07) }}
+  }}
+  h1   {{ color:#E91E8C; font-size:42px; font-weight:700; margin-bottom:6px }}
+  .tag {{ color:#C2185B; font-size:15px; margin-bottom:44px; opacity:.85 }}
+  .msg {{ color:#888;   font-size:15px; margin-bottom:20px }}
+  .bar {{
+    width:260px; height:6px;
+    background: rgba(233,30,140,.18);
+    border-radius: 3px; overflow: hidden; margin-bottom: 32px;
+  }}
+  .fill {{
+    height:100%; background:#E91E8C; border-radius:3px;
+    animation: slide 1.6s ease-in-out infinite;
+  }}
+  @keyframes slide {{
+    0%   {{ margin-left:0;   width:0%  }}
+    50%  {{ margin-left:10%; width:70% }}
+    100% {{ margin-left:100%; width:0% }}
+  }}
+  .phone {{
+    font-size:13px; color:#AD1457; padding:10px 18px;
+    background: rgba(233,30,140,.08); border-radius:8px;
+    font-family: monospace;
+  }}
+</style>
+</head>
+<body>
+  <div class="logo">💄</div>
+  <h1>GlamConnect</h1>
+  <p class="tag">Makeup Artist Booking Platform</p>
+  <p class="msg">Loading, please wait…</p>
+  <div class="bar"><div class="fill"></div></div>
+  {phone_block}
+</body>
+</html>"""
+
+
+def _find_edge():
+    """Return the path to msedge.exe, or None if not found."""
+    candidates = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    # Fallback: check registry
+    try:
+        import winreg
+        key = winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
+        )
+        p = winreg.QueryValueEx(key, "")[0]
+        if os.path.exists(p):
+            return p
+    except Exception:
+        pass
+    return None
+
+
+def _try_edge_app_mode(url, data_dir):
+    """
+    Open *url* in Edge --app mode (looks like a real desktop app).
+    Uses a private Edge profile so it never touches the user's own Edge.
+    Returns True and blocks until the window is closed; returns False if Edge
+    is not available.
+    """
+    import subprocess
+    edge = _find_edge()
+    if not edge:
+        return False
+
+    profile_dir = os.path.join(data_dir, 'edge_profile')
+    proc = subprocess.Popen([
+        edge,
+        f'--app={url}',
+        f'--user-data-dir={profile_dir}',
+        '--window-size=1280,860',
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--disable-sync',
+        '--disable-background-networking',
+    ])
+    proc.wait()   # block until the window is closed
+    return True
+
+
+def _open_desktop_window(local_url, network_url, data_dir, httpd):
+    """
+    Open GlamConnect in a native desktop window.
+
+    Strategy (tries in order):
+      1. pywebview  — proper embedded window, no browser involved
+      2. Edge --app — Microsoft Edge in app mode (looks native, no address bar)
+      3. Default browser — last resort fallback
+    """
+    import time
+    target = local_url + '/admin/'
+
+    # ── 1. pywebview ────────────────────────────────────────────────────────
+    try:
+        import webview
+
+        loading_html = _make_loading_html(network_url)
+
+        window = webview.create_window(
+            'GlamConnect',
+            html=loading_html,
+            width=1280,
+            height=860,
+            min_size=(960, 640),
+            background_color='#FFF0F7',
+        )
+
+        def _navigate(win):
+            # Brief pause so the splash is visible
+            time.sleep(0.8)
+            win.load_url(target)
+
+        webview.start(func=_navigate, args=[window])
+
+        # Window was closed — shut down the server cleanly.
+        try:
+            httpd.shutdown()
+        except Exception:
+            pass
+        return
+
+    except Exception:
+        pass   # pywebview unavailable or failed → try next option
+
+    # ── 2. Edge --app mode ──────────────────────────────────────────────────
+    if _try_edge_app_mode(target, data_dir):
+        try:
+            httpd.shutdown()
+        except Exception:
+            pass
+        return
+
+    # ── 3. Default browser fallback ─────────────────────────────────────────
+    import webbrowser
+    webbrowser.open(target)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print('\n[GlamConnect] Server stopped.')
+        pass
+    try:
+        httpd.shutdown()
+    except Exception:
+        pass
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────

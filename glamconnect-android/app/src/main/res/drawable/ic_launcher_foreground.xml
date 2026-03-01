@@ -13,7 +13,7 @@
 
     <!-- Lipstick shape in pink -->
     <path
-        android:fillColor="#E91E8C"
+        android:fillColor="#FFFFFF"
         android:pathData="M47,35 L61,35 L64,45 L44,45 Z" />
     <path
         android:fillColor="#C2185B"

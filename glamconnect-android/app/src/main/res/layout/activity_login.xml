@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingHorizontal="32dp"
+        android:paddingTop="64dp"
+        android:paddingBottom="32dp">
+
+        <!-- Logo -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✦"
+            android:textSize="56sp"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="8dp" />
+
+        <!-- App name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GlamConnect"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Makeup Artist Booking Platform"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="40dp" />
+
+        <!-- Login card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email address"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/emailInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:inputType="textEmailAddress"
+                    android:background="@drawable/input_bg"
+                    android:paddingHorizontal="16dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/on_surface"
+                    android:textColorHint="@color/text_secondary"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Password"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/passwordInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:inputType="textPassword"
+                    android:background="@drawable/input_bg"
+                    android:paddingHorizontal="16dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/on_surface"
+                    android:textColorHint="@color/text_secondary"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Error text -->
+                <TextView
+                    android:id="@+id/errorText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#DC2626"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Progress bar -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:indeterminate="true"
+                    android:progressTint="@color/primary"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Sign in button -->
+                <Button
+                    android:id="@+id/signInButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="Sign In"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="@color/primary"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Create Account -->
+        <Button
+            android:id="@+id/createAccountText"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Create Account"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="2dp"
+            android:layout_marginTop="16dp" />
+
+        <!-- Demo hint -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Demo: admin@glamconnect.com / Admin@1234!"
+            android:textSize="11sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="16dp" />
+
+        <!-- Change server link -->
+        <TextView
+            android:id="@+id/changeServerText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change server address"
+            android:textSize="12sp"
+            android:textColor="@color/accent"
+            android:layout_marginTop="12dp"
+            android:paddingVertical="4dp" />
+
+    </LinearLayout>
+</ScrollView>

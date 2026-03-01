@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 #
-# PyInstaller spec file for GlamConnect standalone .exe
+# PyInstaller spec file for GlamConnect Desktop App
+# Entry point: desktop_app.py  (CustomTkinter native GUI, Django ORM directly)
 #
 # Build with:
 #   cd backend
@@ -10,24 +11,30 @@
 
 import os
 import glob
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules, collect_all
 
 block_cipher = None
 
 # ── Data files Django needs at runtime ──────────────────────────────────────
 datas = []
+binaries = []
 
 # Django's own templates (admin panel, auth views, etc.)
 datas += collect_data_files('django', include_py_files=False)
 
-# DRF's browsable-API templates
+# DRF's browsable-API templates (used by apps even though we don't serve a web UI)
 datas += collect_data_files('rest_framework', include_py_files=False)
 
-# Channels assets
-datas += collect_data_files('channels', include_py_files=False)
-
-# Whitenoise
+# Whitenoise (imported by settings)
 datas += collect_data_files('whitenoise', include_py_files=False)
+
+# CustomTkinter — native desktop GUI (includes theme JSON files + assets)
+try:
+    _ctk_datas, _ctk_binaries, _ctk_hidden = collect_all('customtkinter')
+    datas    += _ctk_datas
+    binaries += _ctk_binaries
+except Exception:
+    _ctk_hidden = []
 
 # ── Include all local source as data (models, migrations, templates, etc.) ──
 # PyInstaller analyses imports statically, but Django discovers apps and
@@ -88,10 +95,6 @@ hiddenimports = [
     'corsheaders.middleware',
     'django_filters',
     'django_filters.rest_framework',
-    'channels',
-    'channels.layers',
-    'channels.generic.websocket',
-    'channels.auth',
     'cloudinary',
     'cloudinary.models',
     'cloudinary.uploader',
@@ -154,10 +157,30 @@ hiddenimports = [
     'apps.payments.views',
     'apps.payments.serializers',
     'apps.payments.urls',
-    'config.urls',
-    'config.wsgi',
-    'config.asgi',
     'config.settings_standalone',
+
+    # ── CustomTkinter (native desktop GUI) ─────────────────────────────────
+    'customtkinter',
+    'customtkinter.windows',
+    'customtkinter.windows.ctk_tk',
+    'customtkinter.windows.ctk_toplevel',
+    'customtkinter.windows.widgets',
+    'customtkinter.windows.widgets.core_widget_classes',
+    'customtkinter.windows.widgets.utility',
+    'customtkinter.windows.widgets.scaling',
+    'customtkinter.windows.widgets.font',
+    'customtkinter.windows.widgets.appearance_mode',
+    'customtkinter.windows.widgets.theme',
+    'customtkinter.windows.widgets.ctk_button',
+    'customtkinter.windows.widgets.ctk_entry',
+    'customtkinter.windows.widgets.ctk_frame',
+    'customtkinter.windows.widgets.ctk_label',
+    'customtkinter.windows.widgets.ctk_progressbar',
+    'customtkinter.windows.widgets.ctk_scrollable_frame',
+    'tkinter',
+    'tkinter.ttk',
+    'tkinter.messagebox',
+    'tkinter.font',
 ]
 
 # Auto-add all migration modules so Django can find them at runtime
@@ -165,23 +188,27 @@ for mig in glob.glob('apps/*/migrations/*.py'):
     module = mig.replace(os.sep, '.').replace('/', '.').replace('.py', '')
     hiddenimports.append(module)
 
+# CustomTkinter hidden imports
+hiddenimports += _ctk_hidden
+
 # ── Analysis ─────────────────────────────────────────────────────────────────
 a = Analysis(
-    ['standalone_server.py'],
+    ['desktop_app.py'],
     pathex=['.'],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        # GUI toolkits not needed
+        # GUI toolkits not needed (we use tkinter/customtkinter)
         'wx',
         'PyQt5',
         'PyQt6',
         'PySide2',
         'PySide6',
+        'pywebview',  # not used in desktop_app.py
 
         # Heavy scientific libs not used
         'matplotlib',
@@ -240,7 +267,7 @@ exe = EXE(
     upx=True,           # Compress with UPX if available (reduces size ~30%)
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,       # Show terminal so users can see server status
+    console=False,      # No terminal — app opens in its own window
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

@@ -3,91 +3,83 @@ package com.glamconnect.app
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.glamconnect.app.data.SessionManager
 import com.glamconnect.app.databinding.ActivitySetupBinding
+import com.glamconnect.app.network.ApiClient
+import com.glamconnect.app.ui.LoginActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
+/**
+ * First-launch screen: asks the user to enter the GlamConnect server URL.
+ * Tests the connection via Retrofit (no WebView).
+ */
 class SetupActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySetupBinding
+    private lateinit var session: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySetupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Pre-fill with saved URL if one exists
-        val prefs = getSharedPreferences("glamconnect", MODE_PRIVATE)
-        val saved = prefs.getString("server_url", "")
-        if (!saved.isNullOrEmpty()) {
-            binding.urlInput.setText(saved)
+        session = SessionManager(this)
+
+        // Auto-skip to login if server URL is already saved
+        if (session.isServerConfigured) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
         }
 
-        binding.connectButton.setOnClickListener {
-            val raw = binding.urlInput.text.toString().trim().trimEnd('/')
-            if (raw.isEmpty()) {
-                binding.urlInput.error = "Please enter the server URL"
-                return@setOnClickListener
-            }
+        binding.connectButton.setOnClickListener { validateAndConnect() }
+    }
 
-            // Basic format check
-            if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
-                binding.urlInput.error = "URL must start with http:// or https://"
-                return@setOnClickListener
-            }
-
-            testConnection(raw)
+    private fun validateAndConnect() {
+        val raw = binding.urlInput.text.toString().trim().trimEnd('/')
+        if (raw.isEmpty()) {
+            binding.urlInput.error = "Please enter the server address"
+            return
         }
+        if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
+            binding.urlInput.error = "Must start with http:// or https://"
+            return
+        }
+        testConnection(raw)
     }
 
     private fun testConnection(url: String) {
         binding.connectButton.isEnabled = false
         binding.statusText.visibility = View.VISIBLE
-        binding.statusText.text = "Testing connection to server…"
+        binding.statusText.text = "Testing connection…"
 
-        // Use a hidden WebView to do a quick connectivity test
-        val testView = WebView(this)
-        testView.settings.javaScriptEnabled = false
-
-        testView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, loadedUrl: String?) {
-                runOnUiThread {
-                    saveAndContinue(url)
+        lifecycleScope.launch {
+            val reachable = withContext(Dispatchers.IO) {
+                try {
+                    val client = ApiClient.get(url)
+                    val resp = client.getArtists("invalid_token")
+                    resp.code() in 200..499
+                } catch (e: Exception) {
+                    false
                 }
             }
 
-            override fun onReceivedError(
-                view: WebView?,
-                errorCode: Int,
-                description: String?,
-                failingUrl: String?
-            ) {
-                runOnUiThread {
-                    binding.connectButton.isEnabled = true
-                    binding.statusText.text = "⚠ Could not reach server. Is GlamConnect running on your PC?\n\nMake sure both devices are on the same WiFi."
-                    Toast.makeText(this@SetupActivity, "Cannot connect to $url", Toast.LENGTH_LONG).show()
-                }
+            if (reachable) {
+                session.serverUrl = url
+                binding.statusText.text = "Connected! ✓"
+                startActivity(Intent(this@SetupActivity, LoginActivity::class.java))
+                finish()
+            } else {
+                binding.connectButton.isEnabled = true
+                binding.statusText.text =
+                    "⚠ Cannot reach server.\n\nMake sure GlamConnect is running on your PC and both devices are on the same WiFi network."
+                Toast.makeText(this@SetupActivity, "Cannot connect to $url", Toast.LENGTH_LONG).show()
             }
         }
-
-        testView.loadUrl("$url/api/v1/")
-
-        // Timeout after 8 seconds — assume reachable and let MainActivity handle errors
-        binding.root.postDelayed({
-            if (binding.connectButton.isEnabled.not()) return@postDelayed
-            saveAndContinue(url)
-        }, 8000)
-    }
-
-    private fun saveAndContinue(url: String) {
-        getSharedPreferences("glamconnect", MODE_PRIVATE)
-            .edit()
-            .putString("server_url", url)
-            .apply()
-
-        startActivity(Intent(this, MainActivity::class.java))
-        finish()
     }
 }

@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- GlamConnect brand palette -->
-    <color name="primary">#E91E8C</color>
-    <color name="primary_dark">#C2185B</color>
-    <color name="accent">#FF4081</color>
-    <color name="background">#FFF0F7</color>
-    <color name="surface">#FFFFFF</color>
-    <color name="on_surface">#212121</color>
-    <color name="text_secondary">#757575</color>
+    <!-- GlamConnect brand palette — Navy Blue / White (Uber-inspired) -->
+    <color name="primary">#142750</color>         <!-- Deep navy blue -->
+    <color name="primary_dark">#0A1A3C</color>    <!-- Darker navy -->
+    <color name="accent">#276EF1</color>          <!-- Bright blue accent -->
+    <color name="background">#FFFFFF</color>      <!-- Pure white -->
+    <color name="surface">#F5F7FA</color>         <!-- Off-white surface -->
+    <color name="on_surface">#111827</color>      <!-- Near-black text -->
+    <color name="text_secondary">#6B7280</color> <!-- Gray text -->
+    <color name="divider">#E5E7EB</color>         <!-- Light gray divider -->
+    <color name="status_pending_bg">#FEF3C7</color>
+    <color name="status_pending_fg">#D97706</color>
+    <color name="status_confirmed_bg">#D1FAE5</color>
+    <color name="status_confirmed_fg">#059669</color>
+    <color name="status_completed_bg">#DBEAFE</color>
+    <color name="status_completed_fg">#1D4ED8</color>
+    <color name="status_cancelled_bg">#FEE2E2</color>
+    <color name="status_cancelled_fg">#DC2626</color>
+
+    <!-- Warning / amber -->
+    <color name="warning">#D97706</color>
 
     <!-- Required by Material theme -->
     <color name="purple_200">#FFBB86FC</color>

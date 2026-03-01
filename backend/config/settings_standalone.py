@@ -203,7 +203,7 @@ CHANNEL_LAYERS = {
 # ── Email: console backend (prints to terminal, no SMTP) ──────────────────
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@glamconnect.local'
-FRONTEND_URL = 'http://127.0.0.1:8000'
+FRONTEND_URL = 'http://127.0.0.1:8765'
 
 # ── Cloudinary stub (no uploads; field is patched to ImageField) ───────────
 CLOUDINARY_STORAGE = {

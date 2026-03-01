@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Internet permission to connect to the GlamConnect server -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -15,22 +14,38 @@
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config">
 
-        <!-- Setup / connection screen (shown on first launch) -->
+        <!-- 1. Sign-in screen — app opens here directly (server URL is cloud-hosted) -->
         <activity
-            android:name=".SetupActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <!-- Main WebView screen -->
-        <activity
-            android:name=".MainActivity"
+            android:name=".ui.LoginActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Setup screen — only reachable from Settings > Change Server -->
+        <activity
+            android:name=".SetupActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 3. Main app (Dashboard / Artists / Bookings / Settings tabs) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <!-- 4. Registration screen -->
+        <activity
+            android:name=".ui.RegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 5. Artist detail / booking screen -->
+        <activity
+            android:name=".ui.artists.ArtistDetailActivity"
+            android:exported="false" />
 
     </application>
 

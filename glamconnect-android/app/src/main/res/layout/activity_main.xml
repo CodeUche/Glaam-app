@@ -1,123 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Native app main screen — fragment container + bottom navigation bar -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
 
-    <!-- Top toolbar with app name and refresh/settings buttons -->
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Fragment container — nav component swaps fragments here -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
+
+    <!-- Bottom navigation bar -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:elevation="4dp">
+        android:background="@color/surface"
+        app:itemIconTint="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_color"
+        app:menu="@menu/bottom_nav_menu" />
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/primary"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:title="@string/app_name"
-            app:titleTextColor="@android:color/white" />
-
-        <!-- Loading bar shown while page loads -->
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:indeterminate="true"
-            android:progressTint="@color/accent"
-            android:visibility="gone" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- Pull-to-refresh wrapping the WebView -->
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <WebView
-            android:id="@+id/webView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <!-- Error screen shown when server is unreachable -->
-    <LinearLayout
-        android:id="@+id/errorLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="32dp"
-        android:background="@color/background"
-        android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="💄"
-            android:textSize="64sp"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cannot Reach GlamConnect"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary"
-            android:layout_marginBottom="12dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Server URL:"
-            android:textSize="13sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/errorUrlText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/primary_dark"
-            android:fontFamily="monospace"
-            android:background="@color/surface"
-            android:padding="10dp"
-            android:layout_marginBottom="24dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Make sure the GlamConnect app is running on your Windows PC and both devices are on the same WiFi network."
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:gravity="center"
-            android:layout_marginBottom="32dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/retryButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Try Again"
-            android:layout_marginBottom="12dp"
-            app:backgroundTint="@color/primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/changeServerButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Change Server URL"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            app:strokeColor="@color/primary" />
-
-    </LinearLayout>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>
