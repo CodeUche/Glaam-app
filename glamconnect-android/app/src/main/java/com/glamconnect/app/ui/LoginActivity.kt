@@ -69,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
                 loginResult.code() == 400 || loginResult.code() == 401 ->
                     showError("Incorrect email or password.")
                 loginResult.isSuccessful && loginResult.body() != null -> {
-                    session.saveTokens(loginResult.body()!!)
+                    session.saveTokens(loginResult.body()!!.tokens)
                     fetchUserRoleThenGo()
                 }
                 else ->

@@ -14,6 +14,12 @@ data class TokenResponse(
     val refresh: String
 )
 
+// Server login response: { "tokens": { "access": "...", "refresh": "..." }, "user": {...} }
+data class LoginResponse(
+    val tokens: TokenResponse,
+    val user: User?
+)
+
 data class RegisterRequest(
     val email: String,
     val password: String,
