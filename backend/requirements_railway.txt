@@ -1,5 +1,5 @@
 # GlamConnect — Railway production requirements
-# (No Redis, Celery, dev tools, or testing packages)
+# (No Redis broker needed — Celery runs in eager/synchronous mode)
 
 # ── Django core ───────────────────────────────────────────────────────────────
 Django==5.0.1
@@ -12,6 +12,9 @@ django-environ==0.11.2
 # ── Database (Railway provides PostgreSQL) ────────────────────────────────────
 psycopg2-binary==2.9.9
 dj-database-url==2.1.0
+
+# ── Task queue (eager/sync mode — no Redis broker needed) ────────────────────
+celery==5.3.6
 
 # ── WebSocket (in-memory layer, no Redis) ─────────────────────────────────────
 channels==4.1.0

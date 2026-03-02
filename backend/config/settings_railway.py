@@ -36,7 +36,7 @@ CACHES = {
 
 # ── Celery: run tasks synchronously (no Redis broker needed) ─────────────────
 CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_TASK_EAGER_PROPAGATES = False  # don't let email/notification failures crash requests
 
 # ── Channels: in-memory layer (no Redis needed) ───────────────────────────────
 CHANNEL_LAYERS = {
