@@ -16,8 +16,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Cloud server URL — update this after Railway deployment
-        buildConfigField("String", "SERVER_URL", "\"https://PLACEHOLDER.up.railway.app\"")
+        // Default URL for Android emulator (10.0.2.2 = your PC's localhost)
+        // Change to your Railway URL after deployment
+        buildConfigField("String", "SERVER_URL", "\"http://10.0.2.2:8765\"")
     }
 
     buildTypes {

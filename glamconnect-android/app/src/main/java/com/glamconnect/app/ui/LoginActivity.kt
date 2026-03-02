@@ -38,8 +38,9 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        // Change server hidden — app uses cloud backend
-        binding.changeServerText.visibility = android.view.View.GONE
+        binding.changeServerText.setOnClickListener {
+            startActivity(Intent(this, SetupActivity::class.java))
+        }
     }
 
     private fun attemptLogin() {
