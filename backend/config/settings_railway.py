@@ -14,6 +14,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)  # noqa: F405
 # Railway injects RAILWAY_PUBLIC_DOMAIN automatically
 ALLOWED_HOSTS = ['*']
 
+# Railway terminates SSL at the load balancer — never redirect internally
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_HSTS_SECONDS = 0
+
 # ── CORS: allow the Android app to reach the API ─────────────────────────────
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
